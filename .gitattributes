@@ -7,5 +7,7 @@
 # Mark shell scripts as executable
 *.sh text eol=lf
 
-# Exclude docs from language stats
+# Exclude from language stats
 docs/* linguist-documentation=true
+Makefile linguist-vendored=true
+Dockerfile linguist-vendored=true
