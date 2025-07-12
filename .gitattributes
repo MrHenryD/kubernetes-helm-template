@@ -1,0 +1,11 @@
+# Set default language for linguist statistics
+*.py linguist-language=Python
+
+# Treat line endings as LF in all files
+* text=auto
+
+# Mark shell scripts as executable
+*.sh text eol=lf
+
+# Exclude docs from language stats
+docs/* linguist-documentation=true
