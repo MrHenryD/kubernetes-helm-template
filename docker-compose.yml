@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "5005:5000"
+    environment:
+      - FLASK_ENV=development
+      - VERSION=1.0.0

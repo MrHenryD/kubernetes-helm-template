@@ -1,0 +1,5 @@
+Thank you for installing {{ .Chart.Name }}.
+Your release is named {{ .Release.Name }}.
+
+To connect to application:
+    kubectl port-forward service/{{ include "api.fullName" . }}-service 8234:{{ .Values.service.port }}
