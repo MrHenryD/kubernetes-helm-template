@@ -1,0 +1,53 @@
+# EBS CSI Addon for AWS
+# helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+# helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver --namespace kube-system
+
+
+# To enable dynamic provisioning, a cluster administrator needs to pre-create one or more StorageClass objects for users
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc
+provisioner: ebs.csi.aws.com   # Defines the dynamic storage provisioner for the storage class
+parameters:
+  type: gp3                    # Volume type: gp2, gp3, io1, io2, sc1, st1
+  fsType: ext4                 # File system: ext4, xfs, etc.
+  encrypted: "true"            # Optional: encrypt the volume
+  kmsKeyId: <optional-kms-id>  # Optional: use your own KMS key
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Delete          # Volume is deleted when PVC is deleted.
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ebs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ebs-sc # defined storage class
+  csi:
+    driver: ebs.csi.aws.com
+    volumeHandle: vol-0abcd1234ef567890 # replace with your EBS volume ID
+    fsType: ext4
+
+---
+
+# Will attempt to bind to the PersistentVolume with the same storage class
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ebs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc # defined storage class
+  resources:
+    requests:
+      storage: 10Gi

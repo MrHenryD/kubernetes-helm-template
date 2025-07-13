@@ -1,0 +1,83 @@
+# Used for scaling nodes in AWS
+# https://karpenter.sh/v1alpha5/provisioner/
+
+# Prerequisites:
+# 1. Create IAM Role for Karpenter Controller
+  # Role should have access to EKS, ECR, CNI, SSM
+
+# 2. Install Karpenter (via Helm)
+  # helm repo add karpenter https://charts.karpenter.sh
+  # helm repo update
+  # helm upgrade --install karpenter karpenter/karpenter \
+  # --namespace karpenter --create-namespace \
+  # --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::${AWS_ACCOUNT_ID}:role/KarpenterControllerRole-${CLUSTER_NAME}" \
+  # --set settings.clusterName=$CLUSTER_NAME \
+  # --set settings.clusterEndpoint=$(aws eks describe-cluster --name $CLUSTER_NAME --query "cluster.endpoint" --output text) \
+  # --set settings.aws.defaultInstanceProfile=KarpenterNodeInstanceProfile-${CLUSTER_NAME}
+
+# 3. Create EC2 Instance Profile (used by Karpenter to launch nodes)
+  # aws iam create-instance-profile --instance-profile-name KarpenterNodeInstanceProfile-${CLUSTER_NAME}
+  # aws iam add-role-to-instance-profile --instance-profile-name KarpenterNodeInstanceProfile-${CLUSTER_NAME} --role-name KarpenterNodeRole-${CLUSTER_NAME}
+
+# 4. Create Karpenter Provisioner
+# Defines, what kind of workload should be scheduled?
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: default
+spec:
+  # Nodes created by this provisioner will have the following labels
+  labels:
+    karpenter.sh/provisioner-name: default
+  # Restrict instance types, zones, arch
+  requirements:
+    - key: "node.kubernetes.io/instance-type"
+      operator: In
+      values: ["t3.medium", "t3.large"]
+  limits:
+    resources:
+      cpu: 1000
+  # NOTE: taints / tolerations: controls pod scheduling
+  # Connects to NodeClass
+  # When Karpenter needs to launch a new node for a pending pod that matches the Provisioner, it looks up the referenced EC2NodeClass to know what AWS settings to use
+  providerRef:
+    name: default
+  ttlSecondsAfterEmpty: 30
+
+---
+
+# 5. Create Node Class
+# This defines the EC2 instance types, AMI family, and other settings for Karpenter nodes.
+# Ensure the subnetSelector and securityGroupSelector match your EKS cluster's settings.
+# Replace ${CLUSTER_NAME} with your actual EKS cluster name.
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  subnetSelector:
+    karpenter.sh/discovery: ${CLUSTER_NAME}
+  securityGroupSelector:
+    karpenter.sh/discovery: ${CLUSTER_NAME}
+  amiFamily: AL2
+  instanceProfile: KarpenterNodeInstanceProfile-${CLUSTER_NAME}
+
+---
+
+# 6. Create Pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: inflate
+spec:
+  # UThis pod can only be scheduled onto nodes labeled node.k8s.aws/type=gpu
+  nodeSelector:
+    node.k8s.aws/type: gpu
+  containers:
+  - name: inflate
+    image: public.ecr.aws/bitnami/nginx
+    resources:
+      requests:
+        cpu: 1
+
+---

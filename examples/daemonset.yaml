@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-logger
+spec:
+  selector:
+    matchLabels:
+      name: logger
+  template:
+    metadata:
+      labels:
+        name: logger
+    spec:
+      containers:
+        - name: filebeat
+          image: elastic/filebeat:7.10.0

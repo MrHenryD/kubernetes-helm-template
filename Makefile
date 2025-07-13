@@ -44,8 +44,14 @@ helm-check:
 
 helm-upgrade:
 	@echo "Installing Helm chart..."
-	@helm upgrade --install $(HELM_RELEASE) helm/ --set image.repository=$(IMAGE_NAME) --set image.tag=$(IMAGE_VERSION)
+	@helm upgrade --install $(HELM_RELEASE) helm/ \
+		--set image.repository=$(IMAGE_NAME) \
+		--set image.tag=$(IMAGE_VERSION) \
+		--namespace $(KIND_NAMESPACE) \
+		--create-namespace
+	@echo "Helm release $(HELM_RELEASE) upgraded or installed successfully."
 
 helm-uninstall:
 	@echo "Uninstalling Helm release..."
-	@helm uninstall $(HELM_RELEASE)
+	@helm uninstall $(HELM_RELEASE) --namespace $(KIND_NAMESPACE)
+	@echo "Helm release $(HELM_RELEASE) uninstalled successfully."

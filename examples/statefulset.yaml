@@ -1,0 +1,33 @@
+# Each Pod in a StatefulSet derives its hostname from the name of the StatefulSet and the ordinal of the Pod. 
+# The pattern for the constructed hostname is $(statefulset name)-$(ordinal)
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: "mysql"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        # For production use, the Kubernetes project recommends using the ReadWriteOncePod access mode instead.
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
