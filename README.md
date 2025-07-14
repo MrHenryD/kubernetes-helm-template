@@ -28,7 +28,8 @@ A reference project for deploying a Flask application using Docker, Kubernetes, 
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile
-├── helm/
+├── base/
+├── chart/
 │   ├── Chart.yaml
 │   ├── values.yaml
 │   └── templates/
@@ -37,6 +38,11 @@ A reference project for deploying a Flask application using Docker, Kubernetes, 
 │       ├── config.yaml
 │       ├── _helpers.yaml
 │       └── NOTES.txt
+|
+├── overlays/
+│   ├── dev/
+│   └── prod/
+|
 ├── src/
 │   ├── app.py
 │   └── settings.py
@@ -119,7 +125,7 @@ A reference project for deploying a Flask application using Docker, Kubernetes, 
 ## Configuration
 
 - **Image and version:** Set in `values.yaml` and `Makefile`.
-- **Resources:** CPU and memory requests/limits are configurable in `helm/values.yaml`.
+- **Resources:** CPU and memory requests/limits are configurable in `chart/values.yaml`.
 - **Environment variables:** Managed via Kubernetes ConfigMap (`config.yaml`).
 - **Probes:** Liveness and readiness probes are set in `values.yaml` and injected into the deployment.
 

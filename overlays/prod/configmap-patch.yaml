@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+data:
+  DESCRIPTION: "This is a 'production' ConfigMap for my Helm chart."

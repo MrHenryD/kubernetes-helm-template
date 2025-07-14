@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+namePrefix: dev-
+
+# Labels to add to all resources and selectors.
+
+# Typical use case: a dev, staging and production
+# environment that are mostly identical but differing
+# crucial ways (image tags, a few server arguments,
+# etc. that differ from the common base).
+resources:
+- ../../base
+
+# Small patches that do one thing are best, e.g. modify
+# a memory request/limit, change an env var in a
+# ConfigMap, etc.  Small patches are easy to review and
+# easy to mix together in overlays.
+
+labels:
+- includeSelectors: true
+  pairs:
+    variant: development
+
+patches:
+- path: configmap-patch.yaml

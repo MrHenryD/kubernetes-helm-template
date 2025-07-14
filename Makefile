@@ -7,6 +7,11 @@ HELM_RELEASE=myapp
 # .PHONY: tells Make that these targets are not actual files
 PHONY: setup-kind
 
+update-namespace:
+	@echo "Updating namespace to $(KIND_NAMESPACE)..."
+	@kubectl config set-context --current --namespace=$(KIND_NAMESPACE)
+	@echo "Namespace updated to $(KIND_NAMESPACE)."
+
 build-image:
 	@echo "Building Docker image..."
 	@docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
@@ -55,3 +60,18 @@ helm-uninstall:
 	@echo "Uninstalling Helm release..."
 	@helm uninstall $(HELM_RELEASE) --namespace $(KIND_NAMESPACE)
 	@echo "Helm release $(HELM_RELEASE) uninstalled successfully."
+
+kustomize-build:
+	@echo "Building kustomization..."
+	@kustomize build $(DIRECTORY) > output.yaml
+	@echo "Kustomization build completed. Output saved to output.yaml."
+
+kustomize-apply:
+	@echo "Applying kustomization..."
+	@kustomize build $(DIRECTORY) | kubectl apply -f -
+	@echo "Kustomization applied successfully."
+
+kustomize-destroy:
+	@echo "Destroying kustomization..."
+	@kustomize build $(DIRECTORY) | kubectl delete -f -
+	@echo "Kustomization destroyed successfully."
