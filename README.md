@@ -141,6 +141,14 @@ A reference project for deploying a Flask application using Docker, Kubernetes, 
 
 ---
 
+## Kustomize Details
+
+- The `base/` directory contains the common manifests (Deployment, ConfigMap, etc.).
+- The `overlays/dev/` and `overlays/prod/` directories customize the base for each environment (e.g., image tags, environment variables, replica counts).
+- Overlays use patches and config map generators to override or add configuration specific to the environment.
+
+---
+
 ## Helm Chart Details
 
 - **Deployment:** Deploys the Flask app with configurable replicas, resources, and probes.

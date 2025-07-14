@@ -49,7 +49,7 @@ helm-check:
 
 helm-upgrade:
 	@echo "Installing Helm chart..."
-	@helm upgrade --install $(HELM_RELEASE) helm/ \
+	@helm upgrade --install $(HELM_RELEASE) chart/ \
 		--set image.repository=$(IMAGE_NAME) \
 		--set image.tag=$(IMAGE_VERSION) \
 		--namespace $(KIND_NAMESPACE) \
